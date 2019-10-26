@@ -1,7 +1,6 @@
-const React = require("react");
-const Jumbotron = require("react-bootstrap/Jumbotron");
-const {useEffect, useCallback, useRef} = require("react");
-const Webcam = require("react-webcam");
+import React, {useEffect, useCallback, useRef} from "react";
+import Jumbotron from "react-bootstrap/Jumbotron";
+import Webcam from "react-webcam";
 
 const styles = {
   App: {
@@ -21,12 +20,6 @@ const styles = {
     alignContent: "center",
   },
 };
-
-// const devicePort = 0;
-// const wCap = new cv.VideoCapture(devicePort);
-
-// // read frames from capture
-// const frame = wCap.read();
 
 function App() {
   const webcamRef = useRef(null);
@@ -55,22 +48,6 @@ function App() {
     facingMode: "user"
   };
 
-  const WebcamCapture = () => {
-   
-    return (
-      <>
-        <Webcam
-          audio={false}
-          height={600}
-          ref={webcamRef}
-          screenshotFormat="image/jpeg"
-          width={600}
-          videoConstraints={videoConstraints}
-        />
-      </>
-    );
-  };
-
   return (
     <div style={styles.App}>
       <header style={styles.AppHeader}>
@@ -78,13 +55,18 @@ function App() {
           <h1>Jazz Hands</h1>
         </Jumbotron>
         <div styles={styles.webcam}>
-          <WebcamCapture
+          <Webcam
+            audio={false}
+            height={600}
+            ref={webcamRef}
+            screenshotFormat="image/jpeg"
+            width={600}
+            videoConstraints={videoConstraints}
           />
         </div>
       </header>
     </div>
   );
 }
-  
 
 export default App;
