@@ -4,12 +4,12 @@ app = Flask(__name__)
 
 @app.route("/")
 def root():
-    return render_template('./public/index.html');
+    return render_template('public/index.html');
 
 @app.route('/detect', methods=['POST'])
 def detect():
-	print(request.get_json())
-    return "Received"
+    img = request.get_json()["image"]
+    return img
 
 
 if __name__ == '__main__':
