@@ -1,6 +1,5 @@
-const React = require('react');
+import React, { Component } from 'react';
 const logo = require('./logo.svg');
-const cv = require('opencv4nodejs');
 
 const styles = {
   App: {
@@ -55,5 +54,6 @@ function App() {
     </div>
   );
 }
+  
 
 export default App;

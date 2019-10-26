@@ -38,13 +38,13 @@ def removeBG(frame):
     return res
 
 
-def calculateFingers(res,drawing):  # -> finished bool, cnt: finger count
+def calculateFingers(res, drawing):  # -> finished bool, cnt: finger count
     #  convexity defect
     hull = cv2.convexHull(res, returnPoints=False)
     if len(hull) > 3:
         defects = cv2.convexityDefects(res, hull)
+        print(defects)
         if type(defects) != type(None):  # avoid crashing.   (BUG not found)
-
             cnt = 0
             for i in range(defects.shape[0]):  # calculate the angle
                 s, e, f, d = defects[i][0]
@@ -72,14 +72,12 @@ cv2.createTrackbar('trh1', 'trackbar', threshold, 100, printThreshold)
 while camera.isOpened():
     ret, frame = camera.read()
     threshold = cv2.getTrackbarPos('trh1', 'trackbar')
-    frame = cv2.bilateralFilter(frame, 5, 50, 100)  # smoothing filter
-    frame = cv2.flip(frame, 1)  # flip the frame horizontally
+    frame = cv2.bilateralFilter(frame, 5, 50, 100).flip(frame, 1)  # smoothing filter, flip the frame horizontally
     cv2.rectangle(frame, (int(cap_region_x_begin * frame.shape[1]), 0),
                  (frame.shape[1], int(cap_region_y_end * frame.shape[0])), (255, 0, 0), 2)
     cv2.imshow('original', frame)
 
-    #  Main operation
-    if isBgCaptured == 1:  # this part wont run until background captured
+    if isBgCaptured == 1:
         img = removeBG(frame)
         img = img[0:int(cap_region_y_end * frame.shape[0]),
                     int(cap_region_x_begin * frame.shape[1]):frame.shape[1]]  # clip the ROI
@@ -92,8 +90,7 @@ while camera.isOpened():
         ret, thresh = cv2.threshold(blur, threshold, 255, cv2.THRESH_BINARY)
         #cv2.imshow('ori', thresh)
 
-
-        # get the coutours
+        # get the contours
         thresh1 = copy.deepcopy(thresh)
         contours, hierarchy = cv2.findContours(thresh1, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
         length = len(contours)
@@ -110,41 +107,38 @@ while camera.isOpened():
             hull = cv2.convexHull(res)
             drawing = np.zeros(img.shape, np.uint8)
             cv2.drawContours(drawing, [res], 0, (0, 255, 0), 2)
-            #cv2.drawContours(drawing, [hull], 0, (0, 0, 255), 3)
+            cv2.drawContours(drawing, [hull], 0, (0, 0, 255), 3)
 
-            isFinishCal,cnt = calculateFingers(res,drawing)
-            if triggerSwitch is True:
-                if isFinishCal is True:
-                    if cnt == 0:
-                        prev = 0
-                    if cnt == 1 and cnt != prev:
-                        prev = 1
-                        filename = 'c.wav'
-                        wave_obj = sa.WaveObject.from_wave_file(filename)
-                        play_obj = wave_obj.play()
-                        #play_obj.wait_done()  # Wait until sound has finished playing
-                    if cnt == 2 and cnt != prev:
-                        prev = 2
-                        filename = 'd.wav'
-                        wave_obj = sa.WaveObject.from_wave_file(filename)
-                        play_obj = wave_obj.play()
-                        #play_obj.wait_done()  # Wait until sound has finished playing
-                    if cnt == 3 and cnt != prev:
-                        prev = 3
-                        filename = 'e.wav'
-                        wave_obj = sa.WaveObject.from_wave_file(filename)
-                        play_obj = wave_obj.play()
-                        #play_obj.wait_done()  # Wait until sound has finished playing
-                    if cnt == 4 and cnt != prev:
-                        prev = 4
-                        #filename = 'f.wav'
-                        #wave_obj = sa.WaveObject.from_wave_file(filename)
-                        #play_obj = wave_obj.play()
-                        #play_obj.wait_done()  # Wait until sound has finished playing
-                        print(cnt)
-                    #app('System Events').keystroke(' ')  # simulate pressing blank space
-                    
-
+            isFinishCal, cnt = calculateFingers(res, drawing)
+            if triggerSwitch and isFinishCal:
+                if cnt == 0:
+                    prev = 0
+                if cnt == 1 and cnt != prev:
+                    prev = 1
+                    filename = 'c.wav'
+                    wave_obj = sa.WaveObject.from_wave_file(filename)
+                    play_obj = wave_obj.play()
+                    #play_obj.wait_done()  # Wait until sound has finished playing
+                if cnt == 2 and cnt != prev:
+                    prev = 2
+                    filename = 'd.wav'
+                    wave_obj = sa.WaveObject.from_wave_file(filename)
+                    play_obj = wave_obj.play()
+                    #play_obj.wait_done()  # Wait until sound has finished playing
+                if cnt == 3 and cnt != prev:
+                    prev = 3
+                    filename = 'e.wav'
+                    wave_obj = sa.WaveObject.from_wave_file(filename)
+                    play_obj = wave_obj.play()
+                    #play_obj.wait_done()  # Wait until sound has finished playing
+                if cnt == 4 and cnt != prev:
+                    prev = 4
+                    #filename = 'f.wav'
+                    #wave_obj = sa.WaveObject.from_wave_file(filename)
+                    #play_obj = wave_obj.play()
+                    #play_obj.wait_done()  # Wait until sound has finished playing
+                    print(cnt)
+                #app('System Events').keystroke(' ')  # simulate pressing blank space
         cv2.imshow('output', drawing)
 
     # Keyboard OP
@@ -156,12 +150,12 @@ while camera.isOpened():
     elif k == ord('b'):  # press 'b' to capture the background
         bgModel = cv2.createBackgroundSubtractorMOG2(0, bgSubThreshold)
         isBgCaptured = 1
-        print( '!!!Background Captured!!!')
+        print('Background captured')
     elif k == ord('r'):  # press 'r' to reset the background
         bgModel = None
         triggerSwitch = False
         isBgCaptured = 0
-        print ('!!!Reset BackGround!!!')
+        print ('Background reset')
     elif k == ord('n'):
         triggerSwitch = True
-        print ('!!!Trigger On!!!')
+        print ('Trigger on')
