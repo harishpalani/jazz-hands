@@ -43,7 +43,6 @@ def calculateFingers(res, drawing):  # -> finished bool, cnt: finger count
     hull = cv2.convexHull(res, returnPoints=False)
     if len(hull) > 3:
         defects = cv2.convexityDefects(res, hull)
-        print(defects)
         if type(defects) != type(None):  # avoid crashing.   (BUG not found)
             cnt = 0
             for i in range(defects.shape[0]):  # calculate the angle
@@ -72,7 +71,7 @@ cv2.createTrackbar('trh1', 'trackbar', threshold, 100, printThreshold)
 while camera.isOpened():
     ret, frame = camera.read()
     threshold = cv2.getTrackbarPos('trh1', 'trackbar')
-    frame = cv2.bilateralFilter(frame, 5, 50, 100).flip(frame, 1)  # smoothing filter, flip the frame horizontally
+    frame = cv2.flip(cv2.bilateralFilter(frame, 5, 50, 100), 1) # smoothing filter, flip the frame horizontally
     cv2.rectangle(frame, (int(cap_region_x_begin * frame.shape[1]), 0),
                  (frame.shape[1], int(cap_region_y_end * frame.shape[0])), (255, 0, 0), 2)
     cv2.imshow('original', frame)
