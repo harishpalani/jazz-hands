@@ -18,10 +18,10 @@ prev = 0
 isBgCaptured = 0   # bool, whether the background captured
 triggerSwitch = False  # if true, keyboard simulator works
 
-def printThreshold(thr):
-    print("! Changed threshold to "+str(thr))
+def print_threshold(thr):
+    print("Changed threshold to " + str(thr))
 
-def removeBG(frame):
+def remove_background(frame):
     fgmask = bgModel.apply(frame, learningRate=learningRate)
     # kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
     # res = cv2.morphologyEx(fgmask, cv2.MORPH_OPEN, kernel)
@@ -31,7 +31,7 @@ def removeBG(frame):
     res = cv2.bitwise_and(frame, frame, mask=fgmask)
     return res
 
-def calculateFingers(res, drawing):  # -> finished bool, cnt: finger count
+def calculate_fingers(res, drawing):  # -> finished bool, cnt: finger count
     #  convexity defect
     hull = cv2.convexHull(res, returnPoints=False)
     if len(hull) > 3:
@@ -60,15 +60,15 @@ def capture(frame):
     #camera = cv2.VideoCapture(0)
     #camera.set(10, 200)
     cv2.namedWindow('trackbar')
-    cv2.createTrackbar('trh1', 'trackbar', threshold, 100, printThreshold)
+    cv2.createTrackbar('trh1', 'trackbar', threshold, 100, print_threshold)
 
     #while camera.isOpened():
         #ret, frame = camera.read()
     threshold = cv2.getTrackbarPos('trh1', 'trackbar')
     frame = cv2.flip(cv2.bilateralFilter(frame, 5, 50, 100), 1) # smoothing filter, flip the frame horizontally
-    cv2.rectangle(frame, (int(cap_region_x_begin * frame.shape[1]), 0),
-                (frame.shape[1], int(cap_region_y_end * frame.shape[0])), (255, 0, 0), 2)
-    cv2.imshow('original', frame)
+    #cv2.rectangle(frame, (int(cap_region_x_begin * frame.shape[1]), 0),
+    #            (frame.shape[1], int(cap_region_y_end * frame.shape[0])), (255, 0, 0), 2)
+    #cv2.imshow('original', frame)
 
     note = ''
     if isBgCaptured == 1:
@@ -119,9 +119,9 @@ def calibrate():
 
 def detect(frame):
     note = ''
-    img = removeBG(frame)
-    img = img[0:int(cap_region_y_end * frame.shape[0]),
-                int(cap_region_x_begin * frame.shape[1]):frame.shape[1]]  # clip the ROI
+    img = remove_background(frame)
+    #img = img[0:int(cap_region_y_end * frame.shape[0]),
+    #            int(cap_region_x_begin * frame.shape[1]):frame.shape[1]]  # clip the ROI
     #cv2.imshow('mask', img)
 
     # convert the image into binary image
@@ -147,11 +147,12 @@ def detect(frame):
         res = contours[ci]
         hull = cv2.convexHull(res)
         drawing = np.zeros(img.shape, np.uint8)
-        cv2.drawContours(drawing, [res], 0, (0, 255, 0), 2)
-        cv2.drawContours(drawing, [hull], 0, (0, 0, 255), 3)
+        #cv2.drawContours(drawing, [res], 0, (0, 255, 0), 2)
+        #cv2.drawContours(drawing, [hull], 0, (0, 0, 255), 3)
 
-        isFinishCal, cnt = calculateFingers(res, drawing)
-        if triggerSwitch and isFinishCal:
+        isFinishCal, cnt = calculate_fingers(res, drawing)
+        #if triggerSwitch and isFinishCal:
+        if isFinishCal:
             if cnt == 0:
                 prev = 0
             if cnt == 1 and cnt != prev:
@@ -183,6 +184,6 @@ def detect(frame):
                 #play_obj.wait_done()  # Wait until sound has finished playing
                 print(cnt)
             #app('System Events').keystroke(' ')  # simulate pressing blank space
-    cv2.imshow('output', drawing)
+    #cv2.imshow('output', drawing)
     
     return note
