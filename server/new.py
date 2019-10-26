@@ -26,7 +26,6 @@ triggerSwitch = False  # if true, keyborad simulator works
 def printThreshold(thr):
     print("! Changed threshold to "+str(thr))
 
-
 def removeBG(frame):
     fgmask = bgModel.apply(frame,learningRate=learningRate)
     # kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
@@ -36,7 +35,6 @@ def removeBG(frame):
     fgmask = cv2.erode(fgmask, kernel, iterations=1)
     res = cv2.bitwise_and(frame, frame, mask=fgmask)
     return res
-
 
 def calculateFingers(res, drawing):  # -> finished bool, cnt: finger count
     #  convexity defect
@@ -60,13 +58,11 @@ def calculateFingers(res, drawing):  # -> finished bool, cnt: finger count
             return True, cnt
     return False, 0
 
-
 # Camera
 camera = cv2.VideoCapture(0)
-camera.set(10,200)
+camera.set(10, 200)
 cv2.namedWindow('trackbar')
 cv2.createTrackbar('trh1', 'trackbar', threshold, 100, printThreshold)
-
 
 while camera.isOpened():
     ret, frame = camera.read()
@@ -112,25 +108,25 @@ while camera.isOpened():
             if triggerSwitch and isFinishCal:
                 if cnt == 0:
                     prev = 0
-                if cnt == 1 and cnt != prev:
+                elif cnt == 1 and cnt != prev:
                     prev = 1
                     filename = 'c.wav'
                     wave_obj = sa.WaveObject.from_wave_file(filename)
                     play_obj = wave_obj.play()
                     #play_obj.wait_done()  # Wait until sound has finished playing
-                if cnt == 2 and cnt != prev:
+                elif cnt == 2 and cnt != prev:
                     prev = 2
                     filename = 'd.wav'
                     wave_obj = sa.WaveObject.from_wave_file(filename)
                     play_obj = wave_obj.play()
                     #play_obj.wait_done()  # Wait until sound has finished playing
-                if cnt == 3 and cnt != prev:
+                elif cnt == 3 and cnt != prev:
                     prev = 3
                     filename = 'e.wav'
                     wave_obj = sa.WaveObject.from_wave_file(filename)
                     play_obj = wave_obj.play()
                     #play_obj.wait_done()  # Wait until sound has finished playing
-                if cnt == 4 and cnt != prev:
+                elif cnt == 4 and cnt != prev:
                     prev = 4
                     #filename = 'f.wav'
                     #wave_obj = sa.WaveObject.from_wave_file(filename)
