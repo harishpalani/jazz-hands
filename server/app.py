@@ -1,16 +1,19 @@
-from flask import Flask, render_template, Response, jsonify, request
+from flask import Flask, send_from_directory, Response, jsonify, request
 
-app = Flask(__name__, static_folder='public/static', template_folder="public")
+app = Flask(__name__, static_url_path="", static_folder="static")
 
 @app.route("/")
 def index():
-    return render_template('index.html')
+    return send_from_directory("static", "index.html")
 
-@app.route('/detect', methods=['POST'])
+@app.route('/api/detect', methods=['POST'])
 def detect():
-    img = request.get_json()["image"]
-    return jsonify({"note": detection.detect(img)})
-
+    print(request.form)
+    img, calibrated = request.form["image"], request.form["calibrated"]
+    if calibrated:
+        return jsonify({"note": "A"})
+    else:
+        return jsonify({"note": ""})
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', threaded=True)
