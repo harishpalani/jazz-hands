@@ -11,7 +11,7 @@ import simpleaudio as sa
 # opencv: 2.4.13
 
 # parameters
-cap_region_x_begin=0.25  # start point/total width
+cap_region_x_begin=0.5  # start point/total width
 cap_region_y_end=1  # start point/total width
 threshold = 60  #  BINARY threshold
 blurValue = 41  # GaussianBlur parameter
@@ -25,7 +25,7 @@ isBgCaptured = 0   # bool, whether the background captured
 triggerSwitch = False  # if true, keyborad simulator works
 
 def printThreshold(thr):
-    print("! Changed threshold to "+str(thr))
+    print("Changed threshold to "+str(thr))
 
 
 def removeBG(frame):
@@ -44,13 +44,16 @@ def calculateFingers(res, drawing):  # -> finished bool, cnt: finger count
     hull1 = cv2.convexHull(res[0], returnPoints=False)
     hull2 = cv2.convexHull(res[1], returnPoints=False)
     ret = True
+    cnt = 0
+
+    # print('Len hull1: ' + str(len(hull1)))
+    # print('Len hull2: ' + str(len(hull2)))
 
     if len(hull1) > 3:
         defects1 = cv2.convexityDefects(res[0], hull1)
         if type(defects1) == type(None):  # avoid crashing.   (BUG not found)
             ret = False
         else:
-           cnt = 0
            for i in range(defects1.shape[0]):  # calculate the angle
                s, e, f, d = defects1[i][0]
                start = tuple(res[0][s][0])
@@ -64,7 +67,7 @@ def calculateFingers(res, drawing):  # -> finished bool, cnt: finger count
                    cnt += 1
                    cv2.circle(drawing, start, 8, [211, 84, 0], -1)
     
-    if len(hull2) > 3:
+    if len(hull2) > 3 and (len(hull1) != len(hull2)):
         defects2 = cv2.convexityDefects(res[1], hull2)
         if type(defects2) == type(None):
             ret = False
@@ -132,7 +135,7 @@ while camera.isOpened():
                     second = first
                     first = area
                     ci = i 
-                elif (area > second and area != first):
+                elif area > second:# and area != first):
                     second = area
                     ci2 = i
 
@@ -154,7 +157,7 @@ while camera.isOpened():
                 elif cnt == 1 and cnt != prev and cnt != prevprev:
                     prevprev = prev
                     prev = 1
-                    filename = 'c.wav'
+                    filename = 'a.wav'
                     wave_obj = sa.WaveObject.from_wave_file(filename)
                     play_obj = wave_obj.play()
                     #play_obj.wait_done()  # Wait until sound has finished playing
@@ -162,7 +165,7 @@ while camera.isOpened():
                 elif cnt == 2 and cnt != prev and cnt != prevprev:
                     prevprev = prev
                     prev = 2
-                    filename = 'd.wav'
+                    filename = 'b.wav'
                     wave_obj = sa.WaveObject.from_wave_file(filename)
                     play_obj = wave_obj.play()
                     #play_obj.wait_done()  # Wait until sound has finished playing
@@ -170,7 +173,7 @@ while camera.isOpened():
                 elif cnt == 3 and cnt != prev and cnt != prevprev:
                     prevprev = prev
                     prev = 3
-                    filename = 'e.wav'
+                    filename = 'c.wav'
                     wave_obj = sa.WaveObject.from_wave_file(filename)
                     play_obj = wave_obj.play()
                     #play_obj.wait_done()  # Wait until sound has finished playing
@@ -178,7 +181,7 @@ while camera.isOpened():
                 elif cnt == 4 and cnt != prev and cnt != prevprev:
                     prevprev = prev
                     prev = 4
-                    filename = 'f.wav'
+                    filename = 'd.wav'
                     wave_obj = sa.WaveObject.from_wave_file(filename)
                     play_obj = wave_obj.play()
                     #play_obj.wait_done()  # Wait until sound has finished playing
@@ -186,7 +189,7 @@ while camera.isOpened():
                 elif cnt == 5 and cnt != prev and cnt != prevprev:
                     prevprev = prev
                     prev = 5
-                    filename = 'g.wav'
+                    filename = 'e.wav'
                     wave_obj = sa.WaveObject.from_wave_file(filename)
                     play_obj = wave_obj.play()
                     #play_obj.wait_done()  # Wait until sound has finished playing
@@ -194,7 +197,7 @@ while camera.isOpened():
                 elif cnt == 6 and cnt != prev and cnt != prevprev:
                     prevprev = prev
                     prev = 6
-                    filename = 'a.wav'
+                    filename = 'f.wav'
                     wave_obj = sa.WaveObject.from_wave_file(filename)
                     play_obj = wave_obj.play()
                     #play_obj.wait_done()  # Wait until sound has finished playing
@@ -202,7 +205,7 @@ while camera.isOpened():
                 elif cnt == 7 and cnt != prev and cnt != prevprev:
                     prevprev = prev
                     prev = 7
-                    filename = 'b.wav'
+                    filename = 'g.wav'
                     wave_obj = sa.WaveObject.from_wave_file(filename)
                     play_obj = wave_obj.play()
                     #play_obj.wait_done()  # Wait until sound has finished playing
@@ -222,12 +225,12 @@ while camera.isOpened():
     elif k == ord('b'):  # press 'b' to capture the background
         bgModel = cv2.createBackgroundSubtractorMOG2(0, bgSubThreshold)
         isBgCaptured = 1
-        print( '!!!Background Captured!!!')
+        print('Background captured')
     elif k == ord('r'):  # press 'r' to reset the background
         bgModel = None
         triggerSwitch = False
         isBgCaptured = 0
-        print ('!!!Reset BackGround!!!')
+        print ('Background reset')
     elif k == ord('n'):
         triggerSwitch = True
-        print ('!!!Trigger On!!!')
+        print ('Trigger enabled')
