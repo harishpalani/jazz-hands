@@ -11,8 +11,8 @@ import simpleaudio as sa
 # opencv: 2.4.13
 
 # parameters
-cap_region_x_begin=0.5  # start point/total width
-cap_region_y_end=0.8  # start point/total width
+cap_region_x_begin=0.25  # start point/total width
+cap_region_y_end=1  # start point/total width
 threshold = 60  #  BINARY threshold
 blurValue = 41  # GaussianBlur parameter
 bgSubThreshold = 50
@@ -42,7 +42,7 @@ def calculateFingers(res, drawing):  # -> finished bool, cnt: finger count
    #  convexity defect
    hull1 = cv2.convexHull(res[0], returnPoints=False)
    hull2 = cv2.convexHull(res[1], returnPoints=False)
-   if len(hull1) > 3 and len(hull2) > 3:
+   if len(hull1) > 3 or len(hull2) > 3:
        defects1 = cv2.convexityDefects(res[0], hull1)
        defects2 = cv2.convexityDefects(res[1], hull2)
        if type(defects1) != type(None) and type(defects2) != type(None):  # avoid crashing.   (BUG not found)
@@ -139,49 +139,49 @@ while camera.isOpened():
                     if cnt == 0:
                         prev = 0
                         print(cnt)
-                    if cnt == 1 and cnt != prev:
+                    elif cnt == 1 and cnt != prev:
                         prev = 1
                         filename = 'c.wav'
                         wave_obj = sa.WaveObject.from_wave_file(filename)
                         play_obj = wave_obj.play()
                         #play_obj.wait_done()  # Wait until sound has finished playing
                         print(cnt)
-                    if cnt == 2 and cnt != prev:
+                    elif cnt == 2 and cnt != prev:
                         prev = 2
                         filename = 'd.wav'
                         wave_obj = sa.WaveObject.from_wave_file(filename)
                         play_obj = wave_obj.play()
                         #play_obj.wait_done()  # Wait until sound has finished playing
                         print(cnt)
-                    if cnt == 3 and cnt != prev:
+                    elif cnt == 3 and cnt != prev:
                         prev = 3
                         filename = 'e.wav'
                         wave_obj = sa.WaveObject.from_wave_file(filename)
                         play_obj = wave_obj.play()
                         #play_obj.wait_done()  # Wait until sound has finished playing
                         print(cnt)
-                    if cnt == 4 and cnt != prev:
+                    elif cnt == 4 and cnt != prev:
                         prev = 4
                         filename = 'f.wav'
                         wave_obj = sa.WaveObject.from_wave_file(filename)
                         play_obj = wave_obj.play()
                         #play_obj.wait_done()  # Wait until sound has finished playing
                         print(cnt)
-                    if cnt == 5 and cnt != prev:
+                    elif cnt == 5 and cnt != prev:
                         prev = 5
                         filename = 'g.wav'
                         wave_obj = sa.WaveObject.from_wave_file(filename)
                         play_obj = wave_obj.play()
                         #play_obj.wait_done()  # Wait until sound has finished playing
                         print(cnt)
-                    if cnt == 6 and cnt != prev:
+                    elif cnt == 6 and cnt != prev:
                         prev = 6
                         filename = 'a.wav'
                         wave_obj = sa.WaveObject.from_wave_file(filename)
                         play_obj = wave_obj.play()
                         #play_obj.wait_done()  # Wait until sound has finished playing
                         print(cnt)
-                    if cnt == 7 and cnt != prev:
+                    elif cnt == 7 and cnt != prev:
                         prev = 7
                         filename = 'b.wav'
                         wave_obj = sa.WaveObject.from_wave_file(filename)
