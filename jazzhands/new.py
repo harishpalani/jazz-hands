@@ -162,11 +162,33 @@ while camera.isOpened():
                         print(cnt)
                     if cnt == 4 and cnt != prev:
                         prev = 4
-                        #filename = 'f.wav'
-                        #wave_obj = sa.WaveObject.from_wave_file(filename)
-                        #play_obj = wave_obj.play()
+                        filename = 'f.wav'
+                        wave_obj = sa.WaveObject.from_wave_file(filename)
+                        play_obj = wave_obj.play()
                         #play_obj.wait_done()  # Wait until sound has finished playing
                         print(cnt)
+                    if cnt == 5 and cnt != prev:
+                        prev = 5
+                        filename = 'g.wav'
+                        wave_obj = sa.WaveObject.from_wave_file(filename)
+                        play_obj = wave_obj.play()
+                        #play_obj.wait_done()  # Wait until sound has finished playing
+                        print(cnt)
+                    if cnt == 6 and cnt != prev:
+                        prev = 6
+                        filename = 'a.wav'
+                        wave_obj = sa.WaveObject.from_wave_file(filename)
+                        play_obj = wave_obj.play()
+                        #play_obj.wait_done()  # Wait until sound has finished playing
+                        print(cnt)
+                    if cnt == 7 and cnt != prev:
+                        prev = 7
+                        filename = 'b.wav'
+                        wave_obj = sa.WaveObject.from_wave_file(filename)
+                        play_obj = wave_obj.play()
+                        #play_obj.wait_done()  # Wait until sound has finished playing
+                        print(cnt)
+                    
                     #app('System Events').keystroke(' ')  # simulate pressing blank space
                     
 
