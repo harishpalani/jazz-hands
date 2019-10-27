@@ -18,6 +18,7 @@ blurValue = 41  # GaussianBlur parameter
 bgSubThreshold = 50
 learningRate = 0
 prev = 0
+prevprev = 0
 
 # variables
 isBgCaptured = 0   # bool, whether the background captured
@@ -39,13 +40,16 @@ def removeBG(frame):
 
 
 def calculateFingers(res, drawing):  # -> finished bool, cnt: finger count
-   #  convexity defect
-   hull1 = cv2.convexHull(res[0], returnPoints=False)
-   hull2 = cv2.convexHull(res[1], returnPoints=False)
-   if len(hull1) > 3 or len(hull2) > 3:
-       defects1 = cv2.convexityDefects(res[0], hull1)
-       defects2 = cv2.convexityDefects(res[1], hull2)
-       if type(defects1) != type(None) and type(defects2) != type(None):  # avoid crashing.   (BUG not found)
+    #  convexity defect
+    hull1 = cv2.convexHull(res[0], returnPoints=False)
+    hull2 = cv2.convexHull(res[1], returnPoints=False)
+    ret = True
+
+    if len(hull1) > 3:
+        defects1 = cv2.convexityDefects(res[0], hull1)
+        if type(defects1) == type(None):  # avoid crashing.   (BUG not found)
+            ret = False
+        else:
            cnt = 0
            for i in range(defects1.shape[0]):  # calculate the angle
                s, e, f, d = defects1[i][0]
@@ -59,20 +63,29 @@ def calculateFingers(res, drawing):  # -> finished bool, cnt: finger count
                if angle <= math.pi / 2:  # angle less than 90 degree, treat as fingers
                    cnt += 1
                    cv2.circle(drawing, start, 8, [211, 84, 0], -1)
-           for i in range(defects2.shape[0]):  # calculate the angle
-               s, e, f, d = defects2[i][0]
-               start = tuple(res[1][s][0])
-               end = tuple(res[1][e][0])
-               far = tuple(res[1][f][0])
-               a = math.sqrt((end[0] - start[0]) ** 2 + (end[1] - start[1]) ** 2)
-               b = math.sqrt((far[0] - start[0]) ** 2 + (far[1] - start[1]) ** 2)
-               c = math.sqrt((end[0] - far[0]) ** 2 + (end[1] - far[1]) ** 2)
-               angle = math.acos((b ** 2 + c ** 2 - a ** 2) / (2 * b * c))  # cosine theorem
-               if angle <= math.pi / 2:  # angle less than 90 degree, treat as fingers
-                   cnt += 1
-                   cv2.circle(drawing, start, 8, [211, 84, 0], -1)
-           return True, cnt
-   return False, 0
+    
+    if len(hull2) > 3:
+        defects2 = cv2.convexityDefects(res[1], hull2)
+        if type(defects2) == type(None):
+            ret = False
+        else:
+            for i in range(defects2.shape[0]):  # calculate the angle
+                s, e, f, d = defects2[i][0]
+                start = tuple(res[1][s][0])
+                end = tuple(res[1][e][0])
+                far = tuple(res[1][f][0])
+                a = math.sqrt((end[0] - start[0]) ** 2 + (end[1] - start[1]) ** 2)
+                b = math.sqrt((far[0] - start[0]) ** 2 + (far[1] - start[1]) ** 2)
+                c = math.sqrt((end[0] - far[0]) ** 2 + (end[1] - far[1]) ** 2)
+                angle = math.acos((b ** 2 + c ** 2 - a ** 2) / (2 * b * c))  # cosine theorem
+                if angle <= math.pi / 2:  # angle less than 90 degree, treat as fingers
+                    cnt += 1
+                    cv2.circle(drawing, start, 8, [211, 84, 0], -1)
+                    
+    if ret:
+        return True, cnt
+    else:
+        return False, 0
 
 
 # Camera
@@ -92,7 +105,7 @@ while camera.isOpened():
     cv2.imshow('original', frame)
 
     #  Main operation
-    if isBgCaptured == 1:  # this part wont run until background captured
+    if isBgCaptured == 1:  # this part won't run until background captured
         img = removeBG(frame)
         img = img[0:int(cap_region_y_end * frame.shape[0]),
                     int(cap_region_x_begin * frame.shape[1]):frame.shape[1]]  # clip the ROI
@@ -104,7 +117,6 @@ while camera.isOpened():
         #cv2.imshow('blur', blur)
         ret, thresh = cv2.threshold(blur, threshold, 255, cv2.THRESH_BINARY)
         #cv2.imshow('ori', thresh)
-
 
         # get the coutours
         thresh1 = copy.deepcopy(thresh)
@@ -133,64 +145,71 @@ while camera.isOpened():
             cv2.drawContours(drawing, [res2], 0, (0, 255, 0), 2)
             #cv2.drawContours(drawing, [hull], 0, (0, 0, 255), 3)
 
-            isFinishCal,cnt = calculateFingers([res, res2],drawing)
-            if triggerSwitch is True:
-                if isFinishCal is True:
-                    if cnt == 0:
-                        prev = 0
-                        print(cnt)
-                    elif cnt == 1 and cnt != prev:
-                        prev = 1
-                        filename = 'c.wav'
-                        wave_obj = sa.WaveObject.from_wave_file(filename)
-                        play_obj = wave_obj.play()
-                        #play_obj.wait_done()  # Wait until sound has finished playing
-                        print(cnt)
-                    elif cnt == 2 and cnt != prev:
-                        prev = 2
-                        filename = 'd.wav'
-                        wave_obj = sa.WaveObject.from_wave_file(filename)
-                        play_obj = wave_obj.play()
-                        #play_obj.wait_done()  # Wait until sound has finished playing
-                        print(cnt)
-                    elif cnt == 3 and cnt != prev:
-                        prev = 3
-                        filename = 'e.wav'
-                        wave_obj = sa.WaveObject.from_wave_file(filename)
-                        play_obj = wave_obj.play()
-                        #play_obj.wait_done()  # Wait until sound has finished playing
-                        print(cnt)
-                    elif cnt == 4 and cnt != prev:
-                        prev = 4
-                        filename = 'f.wav'
-                        wave_obj = sa.WaveObject.from_wave_file(filename)
-                        play_obj = wave_obj.play()
-                        #play_obj.wait_done()  # Wait until sound has finished playing
-                        print(cnt)
-                    elif cnt == 5 and cnt != prev:
-                        prev = 5
-                        filename = 'g.wav'
-                        wave_obj = sa.WaveObject.from_wave_file(filename)
-                        play_obj = wave_obj.play()
-                        #play_obj.wait_done()  # Wait until sound has finished playing
-                        print(cnt)
-                    elif cnt == 6 and cnt != prev:
-                        prev = 6
-                        filename = 'a.wav'
-                        wave_obj = sa.WaveObject.from_wave_file(filename)
-                        play_obj = wave_obj.play()
-                        #play_obj.wait_done()  # Wait until sound has finished playing
-                        print(cnt)
-                    elif cnt == 7 and cnt != prev:
-                        prev = 7
-                        filename = 'b.wav'
-                        wave_obj = sa.WaveObject.from_wave_file(filename)
-                        play_obj = wave_obj.play()
-                        #play_obj.wait_done()  # Wait until sound has finished playing
-                        print(cnt)
-                    
-                    #app('System Events').keystroke(' ')  # simulate pressing blank space
-                    
+            isFinishCal, cnt = calculateFingers([res, res2], drawing)
+            if triggerSwitch and isFinishCal:
+                if cnt == 0:
+                    prevprev = prev
+                    prev = 0
+                    print(cnt)
+                elif cnt == 1 and cnt != prev and cnt != prevprev:
+                    prevprev = prev
+                    prev = 1
+                    filename = 'c.wav'
+                    wave_obj = sa.WaveObject.from_wave_file(filename)
+                    play_obj = wave_obj.play()
+                    #play_obj.wait_done()  # Wait until sound has finished playing
+                    print(cnt)
+                elif cnt == 2 and cnt != prev and cnt != prevprev:
+                    prevprev = prev
+                    prev = 2
+                    filename = 'd.wav'
+                    wave_obj = sa.WaveObject.from_wave_file(filename)
+                    play_obj = wave_obj.play()
+                    #play_obj.wait_done()  # Wait until sound has finished playing
+                    print(cnt)
+                elif cnt == 3 and cnt != prev and cnt != prevprev:
+                    prevprev = prev
+                    prev = 3
+                    filename = 'e.wav'
+                    wave_obj = sa.WaveObject.from_wave_file(filename)
+                    play_obj = wave_obj.play()
+                    #play_obj.wait_done()  # Wait until sound has finished playing
+                    print(cnt)
+                elif cnt == 4 and cnt != prev and cnt != prevprev:
+                    prevprev = prev
+                    prev = 4
+                    filename = 'f.wav'
+                    wave_obj = sa.WaveObject.from_wave_file(filename)
+                    play_obj = wave_obj.play()
+                    #play_obj.wait_done()  # Wait until sound has finished playing
+                    print(cnt)
+                elif cnt == 5 and cnt != prev and cnt != prevprev:
+                    prevprev = prev
+                    prev = 5
+                    filename = 'g.wav'
+                    wave_obj = sa.WaveObject.from_wave_file(filename)
+                    play_obj = wave_obj.play()
+                    #play_obj.wait_done()  # Wait until sound has finished playing
+                    print(cnt)
+                elif cnt == 6 and cnt != prev and cnt != prevprev:
+                    prevprev = prev
+                    prev = 6
+                    filename = 'a.wav'
+                    wave_obj = sa.WaveObject.from_wave_file(filename)
+                    play_obj = wave_obj.play()
+                    #play_obj.wait_done()  # Wait until sound has finished playing
+                    print(cnt)
+                elif cnt == 7 and cnt != prev and cnt != prevprev:
+                    prevprev = prev
+                    prev = 7
+                    filename = 'b.wav'
+                    wave_obj = sa.WaveObject.from_wave_file(filename)
+                    play_obj = wave_obj.play()
+                    #play_obj.wait_done()  # Wait until sound has finished playing
+                    print(cnt)
+                
+                #app('System Events').keystroke(' ')  # simulate pressing blank space
+                
 
         cv2.imshow('output', drawing)
 
