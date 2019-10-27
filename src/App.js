@@ -54,7 +54,7 @@ function App() {
   const capture = useCallback(
     () => {
       const imageSrc = webcamRef.current.getScreenshot();
-      if (false) {
+      if (calibrate) {
         httpsPost({"image": imageSrc, "calibrated":calibrate}, response => {
           setNote(response.note);
         });
