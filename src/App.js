@@ -1,7 +1,8 @@
 import React, {useEffect, useCallback, useRef, useState} from "react";
-import Jumbotron from "react-bootstrap/Jumbotron";
 import Webcam from "react-webcam";
 import Button from "react-bootstrap/Button";
+import "bootstrap/dist/css/bootstrap.min.css";
+import logo from "./logo.png";
 const https = require("https");
 
 const styles = {
@@ -18,6 +19,28 @@ const styles = {
     color: "white",
   },
 
+  AppLogo: {
+    height: "8vmin",
+    width: "8vmin",
+    margin: "16px",
+  },
+
+  Button: {
+    alignSelf: "center",
+    width: "600px"
+  },
+
+  Heading: {
+    font: "Jazz LET",
+    marginBottom: "-8px"
+  },
+
+  Jumbo: {
+    alignItems: "center",
+    alignSelf: "center",
+    display: "flex",
+  },
+
   webcam: {
     alignContent: "center",
   },
@@ -31,12 +54,13 @@ function App() {
   const capture = useCallback(
     () => {
       const imageSrc = webcamRef.current.getScreenshot();
-      if (calibrate) {
-        // const response  = $.post("./api/detect", {image: imageSrc});
-        // setNote(response["note"]);
+      if (false) {
+        httpsPost({"image": imageSrc, "calibrated":calibrate}, response => {
+          setNote(response.note);
+        });
       }
     },
-    [webcamRef]
+    [webcamRef, calibrate, note]
   );
   
   useEffect(() => {
@@ -44,7 +68,7 @@ function App() {
       capture();
     }, 0);
     return () => clearInterval(interval);
-  });
+  }, [capture, note]);
 
   const videoConstraints = {
     width: 600,
@@ -63,8 +87,6 @@ function App() {
       }
     };
 
-    console.log(JSON.stringify(data));
-
     var post_req = https.request(post_options, res => {
       res.setEncoding("utf8");
       var returnData = "";
@@ -72,7 +94,6 @@ function App() {
         returnData += chunk;
       });
       res.on("end", () => {
-        console.log(returnData);
         callback(returnData);
       });
     });
@@ -83,9 +104,11 @@ function App() {
   return (
     <div style={styles.App}>
       <header style={styles.AppHeader}>
-        <Jumbotron fluid>
-          <h1>Jazz Hands</h1>
-        </Jumbotron>
+        <div style={styles.Jumbo}>
+          <img src={logo} style={styles.AppLogo} alt="logo" />
+          <h1 style={styles.Heading}>Jazz Hands</h1>
+          <img src={logo} style={styles.AppLogo} alt="logo" />
+        </div>
         <div styles={styles.webcam}>
           <Webcam
             audio={false}
@@ -95,17 +118,18 @@ function App() {
             width={600}
             videoConstraints={videoConstraints}
           />
-          <Button 
-            variant="primary" 
-            onClick={() => {
-              httpsPost({"image": webcamRef.current.getScreenshot(), "calibratred":calibrate}, response => {
-                console.log(response);
-                setCalibrate("true");
-              });
-            }}>
-          Calibrate
-          </Button>
         </div>
+        <Button
+          onClick={() => {
+            httpsPost({"image": webcamRef.current.getScreenshot(), "calibrated":calibrate}, response => {
+              setCalibrate("true");
+            });
+          }}
+          style={styles.Button}
+          variant="primary" 
+        >
+        Calibrate
+        </Button>
       </header>
     </div>
   );
